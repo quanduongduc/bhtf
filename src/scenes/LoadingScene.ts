@@ -1,41 +1,41 @@
-/**
- * This file demonstrates how to create a simple scene with GLSL shaders
- * loaded from separate files.
- *
- * There are other ways to load shaders, see https://doc.babylonjs.com/advanced_topics/shaders/shaderCodeInBjs
- */
-
-import { Engine } from "@babylonjs/core/Engines/engine";
 import { Scene } from "@babylonjs/core/scene";
-import { ArcRotateCamera } from "@babylonjs/core/Cameras/arcRotateCamera";
 import { Vector3 } from "@babylonjs/core/Maths/math.vector";
 import { CreateSphere } from "@babylonjs/core/Meshes/Builders/sphereBuilder";
 import { CreateGround } from "@babylonjs/core/Meshes/Builders/groundBuilder";
 import { StandardMaterial } from "@babylonjs/core/Materials/standardMaterial";
-import { CreateSceneClass } from "../createScene";
+import { SceneClass } from "../createScene";
 
 // If you don't need the standard material you will still need to import it since the scene requires it.
 // import "@babylonjs/core/Materials/standardMaterial";
 import { Texture } from "@babylonjs/core/Materials/Textures/texture";
-import { Effect } from "@babylonjs/core/Materials/effect";
-import { ShaderMaterial } from "@babylonjs/core/Materials/shaderMaterial";
 
 import grassTextureUrl from "../../assets/grass.jpg";
 import { DirectionalLight } from "@babylonjs/core/Lights/directionalLight";
 import { ShadowGenerator } from "@babylonjs/core/Lights/Shadows/shadowGenerator";
 
 import "@babylonjs/core/Lights/Shadows/shadowGeneratorSceneComponent";
+import { setupPlayerCamera } from "../player/playerCamera";
+import { UniversalCamera } from "@babylonjs/core/Cameras/universalCamera";
+import { FreeCamera, SceneLoader } from "@babylonjs/core";
 
-import fresnelVertexShader from "../glsl/fresnel/vertex.glsl";
-import fresnelFragmentShader from "../glsl/fresnel/fragment.glsl";
+export class LoadingScene extends SceneClass {
 
-export class FresnelShaderScene implements CreateSceneClass {
-    createScene = async (
-        engine: Engine,
-        canvas: HTMLCanvasElement
-    ): Promise<Scene> => {
+    constructor(canvas: HTMLCanvasElement) {
+        super(canvas)
+        this.scene = this.createScene();
+
+        this.createEnvironment();
+
+        this.initController();
+
+        this.engine.runRenderLoop(() => {
+            this.scene.render();
+        });
+    }
+
+    createScene(): Scene {
         // This creates a basic Babylon Scene object (non-mesh)
-        const scene = new Scene(engine);
+        const scene = new Scene(this.engine);
 
         void Promise.all([
             import("@babylonjs/core/Debug/debugLayer"),
@@ -49,21 +49,25 @@ export class FresnelShaderScene implements CreateSceneClass {
             });
         });
 
-        // This creates and positions a free camera (non-mesh)
-        const camera = new ArcRotateCamera(
-            "my first camera",
-            0,
-            Math.PI / 3,
-            10,
-            new Vector3(0, 0, 0),
-            scene
-        );
+
+        const framesPerSecond = 60;
+        const gravity = -9.81;
+
+        scene.gravity = new Vector3(0, gravity / framesPerSecond, 0);
+        scene.collisionsEnabled = true;
+
+
+        scene.onPointerDown = (evt) => {
+            if (evt.button === 0) this.engine.enterPointerlock();
+            if (evt.button === 1) this.engine.exitPointerlock();
+        };
+
+        const camera = setupPlayerCamera(scene);
 
         // This targets the camera to scene origin
         camera.setTarget(Vector3.Zero());
-
         // This attaches the camera to the canvas
-        camera.attachControl(canvas, true);
+        camera.attachControl(this.canvas, true);
 
         // This creates a light, aiming 0,1,0 - to the sky (non-mesh)
         // const light = new HemisphericLight(
@@ -85,30 +89,12 @@ export class FresnelShaderScene implements CreateSceneClass {
         // Move the sphere upward 1/2 its height
         sphere.position.y = 1;
 
-        // Add shaders to the store
-        Effect.ShadersStore["fresnelVertexShader"] = fresnelVertexShader;
-        Effect.ShadersStore["fresnelFragmentShader"] = fresnelFragmentShader;
-
-        // Create shader material to use with the sphere
-        const shaderMaterial = new ShaderMaterial(
-            "fresnel",
-            scene,
-            {
-                vertex: "fresnel",
-                fragment: "fresnel",
-            },
-            {
-                attributes: ["position", "normal"],
-                defines: [],
-                samplers: [],
-                uniforms: ["cameraPosition", "world", "worldViewProjection"],
-            }
-        );
-
-        sphere.material = shaderMaterial;
-
         // Our built-in 'ground' shape.
-        const ground = CreateGround("ground", { width: 6, height: 6 }, scene);
+        const ground = CreateGround(
+            "ground",
+            { width: 6, height: 6 },
+            scene
+        );
 
         // Load a texture to be used as the ground material
         const groundMaterial = new StandardMaterial("ground material", scene);
@@ -125,7 +111,7 @@ export class FresnelShaderScene implements CreateSceneClass {
         light.intensity = 0.5;
         light.position.y = 10;
 
-        const shadowGenerator = new ShadowGenerator(512, light);
+        const shadowGenerator = new ShadowGenerator(512, light)
         shadowGenerator.useBlurExponentialShadowMap = true;
         shadowGenerator.blurScale = 2;
         shadowGenerator.setDarkness(0.2);
@@ -134,6 +120,40 @@ export class FresnelShaderScene implements CreateSceneClass {
 
         return scene;
     };
+
+    async createEnvironment(): Promise<void> {
+        const { meshes } = await SceneLoader.ImportMeshAsync(
+            "",
+            "./models/",
+            "Prototype_Level.glb",
+            this.scene
+        );
+
+        meshes.map((mesh) => {
+            mesh.checkCollisions = true;
+        });
+    }
+
+    initController(): void {
+        const camera = new FreeCamera('camera', new Vector3(0, 5, -10), this.scene)
+
+        camera.applyGravity = true;
+        camera.checkCollisions = true;
+
+        camera.ellipsoid = new Vector3(1, 1, 1);
+
+        camera.minZ = 0.45;
+        camera.speed = 0.2;
+        camera.angularSensibility = 4000;
+
+        camera.keysUp.push(87);
+        camera.keysLeft.push(65);
+        camera.keysDown.push(83);
+        camera.keysRight.push(68);
+    }
+
 }
 
-export default new FresnelShaderScene();
+const LoadingSceneInstance = new LoadingScene(document.getElementById("renderCanvas") as HTMLCanvasElement);
+
+export default LoadingSceneInstance;

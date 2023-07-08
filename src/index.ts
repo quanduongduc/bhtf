@@ -1,7 +1,8 @@
 import { Engine } from "@babylonjs/core/Engines/engine";
 import { WebGPUEngine } from "@babylonjs/core/Engines/webgpuEngine";
-import { getSceneModuleWithName } from "./createScene";
+import { IScene, SceneClass, getSceneModuleWithName } from "./createScene";
 import "@babylonjs/core/Engines/WebGPU/Extensions/engine.uniformBuffer";
+import { setupPlayerCamera } from "./player/playerCamera";
 
 const getModuleToLoad = (): string | undefined =>
     location.search.split("scene=")[1]?.split("&")[0];
@@ -9,13 +10,18 @@ const getModuleToLoad = (): string | undefined =>
 export const babylonInit = async (): Promise<void> => {
     // get the module to load
     const moduleName = getModuleToLoad();
-    const createSceneModule = await getSceneModuleWithName(moduleName);
+
+    const SceneInstance = await getSceneModuleWithName(moduleName);
+
     const engineType =
         location.search.split("engine=")[1]?.split("&")[0] || "webgl";
     // Execute the pretasks, if defined
-    await Promise.all(createSceneModule.preTasks || []);
+
+    await Promise.all(SceneInstance.preTasks || []);
+
     // Get the canvas element
     const canvas = document.getElementById("renderCanvas") as HTMLCanvasElement;
+
     // Generate the BABYLON 3D engine
     let engine: Engine;
     if (engineType === "webgpu") {
@@ -34,8 +40,13 @@ export const babylonInit = async (): Promise<void> => {
         engine = new Engine(canvas, true);
     }
 
+    SceneInstance.engine = engine
+    SceneInstance.canvas = canvas
+
     // Create the scene
-    const scene = await createSceneModule.createScene(engine, canvas);
+    const scene = SceneInstance.createScene();
+
+
 
     // JUST FOR TESTING. Not needed for anything else
     (window as any).scene = scene;
