@@ -10,6 +10,7 @@ import "@babylonjs/loaders";
 import { SceneClass } from "../createScene";
 import { ANGULARSENSIBILITY, ELLIPSOID, MINZ, SPEED } from "../constanst/camera";
 import MapModels from "../../assets/models/untitled.glb"
+import Favicon from "../assets/sprites/favicon.png";
 
 
 class InteriorScene extends SceneClass {

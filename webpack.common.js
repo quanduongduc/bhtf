@@ -2,6 +2,8 @@ const path = require("path");
 const fs = require("fs");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
+const FaviconsWebpackPlugin = require("favicons-webpack-plugin");
+
 // const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
 // App directory
@@ -57,8 +59,11 @@ module.exports = {
         // new BundleAnalyzerPlugin(),
         new CleanWebpackPlugin(),
         new HtmlWebpackPlugin({
-            inject: true,
+            inject: "head",
             template: path.resolve(appDirectory, "public/index.html"),
         }),
+        new FaviconsWebpackPlugin(
+            path.resolve(appDirectory, "assets/sprites/favicon.png")
+        ),
     ],
 };
