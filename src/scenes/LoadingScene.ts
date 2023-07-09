@@ -10,6 +10,8 @@ import {
 import "@babylonjs/loaders";
 import { SceneClass } from "../createScene";
 import { ANGULARSENSIBILITY, ELLIPSOID, MINZ, SPEED } from "../constanst/camera";
+import MapModels from "../../assets/models/untitled.glb"
+
 
 class LoadingScene extends SceneClass {
 
@@ -48,8 +50,8 @@ class LoadingScene extends SceneClass {
     async initEnvironment(): Promise<Vector3> {
         const { meshes } = await SceneLoader.ImportMeshAsync(
             "",
-            "./models/",
-            "untitled.glb",
+            "",
+            MapModels,
             this.scene
         );
 

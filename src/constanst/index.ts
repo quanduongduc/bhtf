@@ -1,0 +1,1 @@
+const PUBLIC_FOLDER_PROD = '../public'
