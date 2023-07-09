@@ -46,7 +46,7 @@ export const getSceneModuleWithName = (
 
     // To build quicker, replace the above return statement with:
 
-    return import('./scenes/LoadingScene').then((module: CreateSceneModule) => {
+    return import('./scenes/InteriorScene').then((module: CreateSceneModule) => {
         return module.default;
     });
 };

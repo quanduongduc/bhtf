@@ -1,19 +1,18 @@
 import {
     Scene,
-    Engine,
     SceneLoader,
     Vector3,
     HemisphericLight,
-    FreeCamera,
     UniversalCamera,
 } from "@babylonjs/core";
+
 import "@babylonjs/loaders";
 import { SceneClass } from "../createScene";
 import { ANGULARSENSIBILITY, ELLIPSOID, MINZ, SPEED } from "../constanst/camera";
 import MapModels from "../../assets/models/untitled.glb"
 
 
-class LoadingScene extends SceneClass {
+class InteriorScene extends SceneClass {
 
     constructor(canvas: HTMLCanvasElement) {
         super(canvas);
@@ -86,6 +85,6 @@ class LoadingScene extends SceneClass {
     }
 }
 
-const LoadingSceneInstance = new LoadingScene(document.querySelector("#renderCanvas") as HTMLCanvasElement);
+const LoadingSceneInstance = new InteriorScene(document.querySelector("#renderCanvas") as HTMLCanvasElement);
 
 export default LoadingSceneInstance;
