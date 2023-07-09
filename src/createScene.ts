@@ -1,10 +1,11 @@
+import { Vector3 } from "@babylonjs/core";
 import { Engine } from "@babylonjs/core/Engines/engine";
 import { Scene } from "@babylonjs/core/scene";
 
 export interface IScene {
-    createScene: () => Scene;
-    createEnvironment(): Promise<void>;
-    initController(): void
+    initScene: () => Scene;
+    initEnvironment(): Promise<Vector3>;
+    initController(initCameraPos: Vector3): void
 }
 
 export class SceneClass implements IScene {
@@ -19,15 +20,15 @@ export class SceneClass implements IScene {
         this.scene = new Scene(this.engine);
     }
 
-    createScene(): Scene {
+    initScene(): Scene {
         return this.scene;
     }
 
-    createEnvironment(): Promise<void> {
-        return Promise.resolve();
+    initEnvironment(): Promise<Vector3> {
+        return Promise.resolve(new Vector3(0, 0, 0));
     }
 
-    initController(): void {
+    initController(initCameraPos: Vector3): void {
         return;
     }
 }

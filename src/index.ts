@@ -2,7 +2,6 @@ import { Engine } from "@babylonjs/core/Engines/engine";
 import { WebGPUEngine } from "@babylonjs/core/Engines/webgpuEngine";
 import { IScene, SceneClass, getSceneModuleWithName } from "./createScene";
 import "@babylonjs/core/Engines/WebGPU/Extensions/engine.uniformBuffer";
-import { setupPlayerCamera } from "./player/playerCamera";
 
 const getModuleToLoad = (): string | undefined =>
     location.search.split("scene=")[1]?.split("&")[0];
@@ -44,18 +43,8 @@ export const babylonInit = async (): Promise<void> => {
     SceneInstance.canvas = canvas
 
     // Create the scene
-    const scene = SceneInstance.createScene();
-
-
-
-    // JUST FOR TESTING. Not needed for anything else
+    const scene = SceneInstance.initScene();
     (window as any).scene = scene;
-
-    // Register a render loop to repeatedly render the scene
-    engine.runRenderLoop(function () {
-        scene.render();
-    });
-
     // Watch for browser/canvas resize events
     window.addEventListener("resize", function () {
         engine.resize();
